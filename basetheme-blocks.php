@@ -12,4 +12,10 @@
  * @package         Basetheme_Blocks
  */
 
-// Your code starts here.
+// Exit if accessed directly.
+defined( 'ABSPATH' ) || exit;
+
+define( 'BTBLK_DIR', plugin_dir_path( __FILE__ ) );
+define( 'BTBLK_BLOCKS_DIR', BTBLK_DIR . 'blocks/' );
+
+require BTBLK_BLOCKS_DIR . 'pageheader-imagetext/plugin.php';
