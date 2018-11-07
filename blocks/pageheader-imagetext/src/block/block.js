@@ -10,8 +10,10 @@ import "./style.scss";
 import "./editor.scss";
 
 const { __ } = wp.i18n; // Import __() from wp.i18n
+const { MediaUpload, RichText } = wp.editor;
 const { registerBlockType } = wp.blocks; // Import registerBlockType() from wp.blocks
-let { InspectorControls, MediaUpload } = wp.editor;
+const { Button } = wp.components;
+
 /**
  * Register: aa Gutenberg Block.
  *
@@ -39,6 +41,11 @@ registerBlockType("cgb/block-pageheader-imagetext", {
 		backgroundImage: {
 			type: "string",
 			default: null // no image by default!
+		},
+		body: {
+			type: "array",
+			source: "children",
+			selector: ".pageheader__text"
 		}
 	},
 
@@ -50,33 +57,44 @@ registerBlockType("cgb/block-pageheader-imagetext", {
 	 *
 	 * @link https://wordpress.org/gutenberg/handbook/block-api/block-edit-save/
 	 */
-	edit: function(props) {
-		// Creates a <p class='wp-block-cgb-block-pageheader-imagetext'></p>.
-		const { backgroundImage } = props.attributes;
+	edit: function({ attributes, className, setAttributes }) {
+		const getImageButton = openEvent => {
+			return (
+				<Button onClick={openEvent} className="button button-large">
+					Pick an image
+				</Button>
+			);
+		};
 
 		return (
-			<div class={props.className}>
-				<strong>Select a background image:</strong>
+			<div>
 				<MediaUpload
 					onSelect={media => {
-						props.setAttributes({
-							backgroundImage: media.url
-						});
-						console.log(backgroundImage);
-						console.log(props);
+						setAttributes({ backgroundImage: media.url });
 					}}
 					type="image"
-					value="{backgroundImage}"
-					render={({ open }) => (
-						<button
-							onClick={
-								open // make sure you destructured backgroundImage from props.attributes!
-							}
-						>
-							Upload Image!
-						</button>
-					)}
+					value={attributes.imageID}
+					render={({ open }) => getImageButton(open)}
 				/>
+				<div
+					className="pageheader pageheader--imagetext"
+					style={{
+						backgroundImage: `url(${attributes.backgroundImage})`
+					}}
+				>
+					<RichText
+						onChange={content =>
+							setAttributes({
+								body: content
+							})
+						}
+						value={attributes.body}
+						multiline="p"
+						placeholder="Your header content"
+						formattingControls={["bold", "italic", "underline"]}
+						isSelected={attributes.isSelected}
+					/>
+				</div>
 			</div>
 		);
 	},
@@ -89,18 +107,18 @@ registerBlockType("cgb/block-pageheader-imagetext", {
 	 *
 	 * @link https://wordpress.org/gutenberg/handbook/block-api/block-edit-save/
 	 */
-	save: function(props) {
-		const { attributes, className } = props;
-		const { backgroundImage } = props.attributes;
+	save: function({ attributes }) {
+		const { backgroundImage } = attributes;
+
 		return (
 			<div
-				className={className}
+				className="pageheader pageheader--imagetext"
 				style={{
-					backgroundImage: `url(${backgroundImage})`,
-					backgroundSize: "cover",
-					backgroundPosition: "center"
+					backgroundImage: `url(${attributes.backgroundImage})`
 				}}
-			/>
+			>
+				<div className="pageheader__text">{attributes.body}</div>
+			</div>
 		);
 	}
 });
