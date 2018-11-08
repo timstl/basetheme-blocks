@@ -10,7 +10,7 @@ import "./style.scss";
 import "./editor.scss";
 
 const { __ } = wp.i18n; // Import __() from wp.i18n
-const { MediaUpload, RichText } = wp.editor;
+const { MediaUpload, InnerBlocks } = wp.editor;
 const { registerBlockType } = wp.blocks; // Import registerBlockType() from wp.blocks
 const { Button } = wp.components;
 
@@ -41,11 +41,6 @@ registerBlockType("cgb/block-pageheader-imagetext", {
 		backgroundImage: {
 			type: "string",
 			default: null // no image by default!
-		},
-		body: {
-			type: "array",
-			source: "children",
-			selector: ".pageheader__text"
 		}
 	},
 
@@ -67,7 +62,12 @@ registerBlockType("cgb/block-pageheader-imagetext", {
 		};
 
 		return (
-			<div>
+			<div
+				className="pageheader pageheader--imagetext"
+				style={{
+					backgroundImage: `url(${attributes.backgroundImage})`
+				}}
+			>
 				<MediaUpload
 					onSelect={media => {
 						setAttributes({ backgroundImage: media.url });
@@ -76,25 +76,9 @@ registerBlockType("cgb/block-pageheader-imagetext", {
 					value={attributes.imageID}
 					render={({ open }) => getImageButton(open)}
 				/>
-				<div
-					className="pageheader pageheader--imagetext"
-					style={{
-						backgroundImage: `url(${attributes.backgroundImage})`
-					}}
-				>
-					<RichText
-						onChange={content =>
-							setAttributes({
-								body: content
-							})
-						}
-						value={attributes.body}
-						multiline="p"
-						placeholder="Your header content"
-						formattingControls={["bold", "italic", "underline"]}
-						isSelected={attributes.isSelected}
-					/>
-				</div>
+				<InnerBlocks
+					allowedBlocks={["core/heading", "core/paragraph"]}
+				/>
 			</div>
 		);
 	},
@@ -117,7 +101,9 @@ registerBlockType("cgb/block-pageheader-imagetext", {
 					backgroundImage: `url(${attributes.backgroundImage})`
 				}}
 			>
-				<div className="pageheader__text">{attributes.body}</div>
+				<div class="txt">
+					<InnerBlocks.Content />
+				</div>
 			</div>
 		);
 	}
